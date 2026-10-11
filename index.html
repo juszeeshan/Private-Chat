@@ -1037,6 +1037,15 @@ button {
 .mStatus { text-align: center; font-weight: 600; margin: 6px 0 12px; }
 .mStatus.win { color: #3fb950; }
 .mStatus.lose { color: var(--danger); }
+.turnBadge { display: inline-block; padding: 7px 16px; border-radius: 999px; background: rgba(63,185,80,.16); color: #3fb950; font-weight: 700; animation: turnPulse 1.4s ease-in-out infinite; }
+@keyframes turnPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(63,185,80,.45); } 50% { box-shadow: 0 0 0 9px rgba(63,185,80,0); } }
+.waitBadge { display: inline-block; padding: 7px 16px; border-radius: 999px; background: var(--panel2); color: var(--muted); font-weight: 600; }
+
+.diceBtn { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.diceBtn .diceFace { display: inline-block; font-size: 20px; }
+.diceBtn.rolling .diceFace { animation: diceSpin .5s linear infinite; }
+.diceBtn:disabled { opacity: .7; }
+@keyframes diceSpin { from { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.25); } to { transform: rotate(360deg) scale(1); } }
 .mLegend { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; margin-bottom: 8px; }
 .roundBox { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin: 10px 0; font-size: 13px; text-align: center; }
 
@@ -5482,10 +5491,29 @@ function statusLine(m) {
     return '<div class="mStatus lose">\uD83D\uDE14 ' + escapeHtml(m.names[m.winner]) + ' won' + (m.endReason ? ' (' + escapeHtml(m.endReason) + ')' : '') + '</div>';
   }
   if (m.turn >= 0) {
-    return m.turn === m.me ? '<div class="mStatus win">\uD83D\uDFE2 Your turn</div>'
-      : '<div class="mStatus">\u23F3 ' + escapeHtml(m.names[m.turn]) + '\'s turn</div>';
+    return m.turn === m.me ? '<div class="mStatus"><span class="turnBadge">\uD83D\uDFE2 Your turn</span></div>'
+      : '<div class="mStatus"><span class="waitBadge">\u23F3 ' + escapeHtml(m.names[m.turn]) + '\'s turn</span></div>';
   }
   return '';
+}
+
+function rollDice(delayMs) {
+  const btn = document.getElementById('diceBtn');
+  if (!btn || btn.disabled || matchBusy) return;
+  btn.disabled = true;
+  btn.classList.add('rolling');
+  const face = btn.querySelector('.diceFace');
+  const faces = ['\u2680', '\u2681', '\u2682', '\u2683', '\u2684', '\u2685'];
+  let i = 0;
+  const spin = setInterval(function () {
+    if (!document.body.contains(btn)) { clearInterval(spin); return; }
+    if (face) face.textContent = faces[i % 6];
+    i++;
+  }, 80);
+  setTimeout(function () {
+    clearInterval(spin);
+    mAct({ type: 'roll' });
+  }, delayMs || 550);
 }
 
 function renderMatch(m, force) {
@@ -5614,13 +5642,15 @@ function snlHtml(m) {
   let info = '';
   if (s.last) {
     const who = s.last.idx === m.me ? 'You' : escapeHtml(m.names[s.last.idx]);
-    info = who + ' rolled <b>' + s.last.roll + '</b>' +
-      (s.last.note === 'ladder' ? ' \uD83E\uDE9C climbed to ' + s.last.to : s.last.note === 'snake' ? ' \uD83D\uDC0D slid to ' + s.last.to :
-        s.last.note === 'exact' ? ' (needs an exact roll)' : ' \u2192 ' + s.last.to);
+    const step = ' (' + s.last.from + ' \u2192 ' + s.last.landed + ')';
+    info = who + ' rolled <b>' + s.last.roll + '</b>' + step +
+      (s.last.note === 'ladder' ? ', \uD83E\uDE9C climbed to ' + s.last.to : s.last.note === 'snake' ? ', \uD83D\uDC0D slid to ' + s.last.to :
+        s.last.note === 'exact' ? ' \u2014 needs an exact roll to finish' : '') +
+      (s.last.roll === 6 && m.status === 'playing' ? ' \uD83C\uDF89 rolled a 6, go again!' : '');
   }
   const legend = '<div class="mLegend"><span style="color:' + cols[0] + '">\u25CF ' + escapeHtml(m.names[0]) + ' (' + s.pos[0] + ')</span>' +
     '<span style="color:' + cols[1] + '">\u25CF ' + escapeHtml(m.names[1]) + ' (' + s.pos[1] + ')</span></div>';
-  const btn = (m.status === 'playing' && m.turn === m.me) ? '<button class="primaryBtn" onclick="mAct({type:\'roll\'})">\uD83C\uDFB2 Roll dice</button>' : '';
+  const btn = (m.status === 'playing' && m.turn === m.me) ? '<button class="primaryBtn diceBtn" id="diceBtn" onclick="rollDice()"><span class="diceFace">\uD83C\uDFB2</span> Roll dice</button>' : '';
   setTimeout(function () { snlAnimateMove(m); }, 30);
   return legend + '<div class="snlBoard"><div class="snlGrid">' + cells + '</div>' + lines + tokens + '</div><div class="gameStatus" style="margin:8px 0">' + info + '</div>' + btn;
 }
@@ -5709,7 +5739,7 @@ function ludoHtml(m) {
   }
   let ctl = '';
   if (m.status === 'playing' && m.turn === m.me) {
-    ctl = s.phase === 'roll' ? '<button class="primaryBtn" onclick="mAct({type:\'roll\'})">\uD83C\uDFB2 Roll dice</button>'
+    ctl = s.phase === 'roll' ? '<button class="primaryBtn diceBtn" id="diceBtn" onclick="rollDice()"><span class="diceFace">\uD83C\uDFB2</span> Roll dice</button>'
       : '<div class="gameStatus" style="margin:8px 0">You rolled <b>' + s.roll + '</b>. Tap a glowing token to move it.</div>';
   }
   const tip = '<div class="gameStatus" style="font-size:12px;margin-top:6px">Roll a 6 to leave the base. Sixes and captures give another roll. \u2605 = safe square.</div>';
