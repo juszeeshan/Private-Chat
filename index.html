@@ -59,7 +59,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Chat">
+<meta name="apple-mobile-web-app-title" content="jus Chat">
 
 
 
@@ -142,6 +142,34 @@ button {
  justify-content: center;
  padding: 20px;
 }
+
+
+#urlSetupScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: var(--bg, #10131a);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+
+.netErrorBanner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 8000;
+  background: #e5484d;
+  color: #fff;
+  text-align: center;
+  font-size: 13px;
+  padding: 8px 12px;
+}
+.netErrorBanner a { color: #fff; text-decoration: underline; margin-left: 8px; }
 
 
 .authBox {
@@ -1018,6 +1046,7 @@ button {
 .snlC i { position: absolute; right: 2px; bottom: 1px; font-style: normal; font-size: 8px; color: var(--text); }
 .snlC b.snlIcon { position: absolute; left: 1px; top: 0; font-style: normal; font-size: 13px; line-height: 1; filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
 .snlC.snk b.snlIcon { transform: scaleX(-1); }
+.snlLines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
 .snlTok { position: absolute; width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.45); z-index: 5; transition: left .16s linear, top .16s linear; }
 .snlTok.t0 { margin: -12px 0 0 -12px; }
 .snlTok.t1 { margin: -4px 0 0 -4px; }
@@ -1128,10 +1157,25 @@ button {
 
 <div id="splashScreen">
   <div class="splashLogo"><span class="e1">😉</span><span class="e2">🤫</span></div>
-  <div class="splashTitle">Chat</div>
+  <div class="splashTitle">jus Chat</div>
   <div class="splashSub">Secure. Simple. Just for us.</div>
 </div>
 <script>setTimeout(function(){var s=document.getElementById("splashScreen");if(s){s.classList.add("fadeOut");setTimeout(function(){s.style.display="none";},450);}},2000);</script>
+
+<div id="urlSetupScreen" class="hidden">
+  <div class="authBox">
+    <div class="authTitle">One-time setup</div>
+    <div class="authSub">This page is being hosted outside Apps Script (e.g. GitHub Pages), so it needs to know where your deployed Web App is. Paste your Apps Script Web App URL below &mdash; it ends in <b>/exec</b>. You only need to do this once per device/browser.</div>
+    <input id="urlSetupInput" placeholder="https://script.google.com/macros/s/XXXXXXXX/exec" style="width:100%;margin:12px 0">
+    <div id="urlSetupError" class="errorText hidden"></div>
+    <button class="primaryBtn" onclick="saveAppsScriptUrl()">Save &amp; Continue</button>
+  </div>
+</div>
+
+<div id="netErrorBanner" class="netErrorBanner hidden">
+  ⚠ Connection problem reaching the server.
+  <a href="#" onclick="openUrlSetup();return false;">Fix the Web App URL</a>
+</div>
 
 
 
@@ -1149,7 +1193,7 @@ button {
 
 
    <div class="authTitle">
-     Chat
+     jus Chat
    </div>
 
 
@@ -1291,7 +1335,7 @@ button {
 
 
    <div class="homeTitle">
-     Chat
+     jus Chat
    </div>
 
 
@@ -1687,12 +1731,59 @@ button {
   When this same file is hosted elsewhere (GitHub Pages, PWA),
   this polyfill recreates the same chainable API using fetch(),
   calling the Apps Script Web App's doPost(e) endpoint instead.
-  Paste your deployed Web App URL below (it ends in /exec).
+  The Web App URL (ends in /exec) is collected once from the
+  person via a one-time setup screen and saved in localStorage,
+  instead of being hardcoded here.
 ===================================================== */
-const APPS_SCRIPT_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';
+const IS_NATIVE_GAS_ = !!(window.google && window.google.script && window.google.script.run);
+let APPS_SCRIPT_URL = '';
+try { APPS_SCRIPT_URL = localStorage.getItem('appsScriptUrl') || ''; } catch (e) { APPS_SCRIPT_URL = ''; }
+
+function isUrlConfigured_() {
+  return /^https:\/\/script\.google(usercontent)?\.com\//.test(APPS_SCRIPT_URL);
+}
+
+function showNetError_(msg) {
+  const b = document.getElementById('netErrorBanner');
+  if (!b) return;
+  if (msg) b.firstChild.textContent = '⚠ ' + msg;
+  b.classList.remove('hidden');
+}
+
+function hideNetError_() {
+  const b = document.getElementById('netErrorBanner');
+  if (b) b.classList.add('hidden');
+}
+
+function openUrlSetup() {
+  const splash = document.getElementById('splashScreen');
+  if (splash) splash.style.display = 'none';
+  const err = document.getElementById('urlSetupError');
+  if (err) err.classList.add('hidden');
+  const input = document.getElementById('urlSetupInput');
+  if (input) input.value = isUrlConfigured_() ? APPS_SCRIPT_URL : '';
+  const scr = document.getElementById('urlSetupScreen');
+  if (scr) scr.classList.remove('hidden');
+}
+
+function saveAppsScriptUrl() {
+  const input = document.getElementById('urlSetupInput');
+  const err = document.getElementById('urlSetupError');
+  const url = (input && input.value || '').trim();
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec\/?$/.test(url)) {
+    if (err) { err.textContent = 'That doesn\'t look like a Web App URL. It should look like https://script.google.com/macros/s/XXXXX/exec'; err.classList.remove('hidden'); }
+    return;
+  }
+  APPS_SCRIPT_URL = url;
+  try { localStorage.setItem('appsScriptUrl', url); } catch (e) {}
+  const scr = document.getElementById('urlSetupScreen');
+  if (scr) scr.classList.add('hidden');
+  hideNetError_();
+  if (typeof proceedAfterSplash === 'function') proceedAfterSplash();
+}
 
 (function () {
-  if (window.google && window.google.script && window.google.script.run) return;
+  if (IS_NATIVE_GAS_) return;
 
   function makeRunner(successFn, failureFn) {
     return new Proxy({}, {
@@ -1705,14 +1796,28 @@ const APPS_SCRIPT_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';
         }
         return function () {
           const args = Array.prototype.slice.call(arguments);
+          if (!isUrlConfigured_()) { openUrlSetup(); return; }
           fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ fn: fnName, args: args })
           })
-            .then(function (r) { return r.json(); })
+            .then(function (r) { return r.text(); })
+            .then(function (text) {
+              let result;
+              try { result = JSON.parse(text); }
+              catch (e) {
+                showNetError_('Could not reach your Web App (got an unexpected response). Check the URL and that the deployment’s access is set to "Anyone".');
+                throw new Error('Non-JSON response from Apps Script — check your Web App URL and deployment access.');
+              }
+              hideNetError_();
+              return result;
+            })
             .then(function (result) { if (successFn) successFn(result); })
-            .catch(function (err) { if (failureFn) failureFn(err); });
+            .catch(function (err) {
+              showNetError_('Connection problem reaching the server.');
+              if (failureFn) failureFn(err); else console.error(err);
+            });
         };
       }
     });
@@ -1800,6 +1905,11 @@ function bootApp() {
   if (bootApp.done) return;
   bootApp.done = true;
   try { applySavedTheme(); } catch (e) {}
+  if (!IS_NATIVE_GAS_ && !isUrlConfigured_()) {
+    hideSplash();
+    openUrlSetup();
+    return;
+  }
   setTimeout(hideSplash, 900);
   proceedAfterSplash();
 }
@@ -5462,11 +5572,53 @@ function playAgainMatch(type, vsBot) {
 
 let snlMatchId = null, snlTokPos = [1, 1], snlAnimating = false;
 
-function snlXY(n) {
+function snlPt(n) {
   n = Math.max(1, Math.min(100, n || 1));
   const fromBottom = Math.floor((n - 1) / 10), rem = (n - 1) % 10, row = 9 - fromBottom;
   const col = fromBottom % 2 === 0 ? rem : 9 - rem;
-  return { left: (col * 10 + 5) + '%', top: (row * 10 + 5) + '%' };
+  return { x: col * 10 + 5, y: row * 10 + 5 };
+}
+
+function snlXY(n) {
+  const p = snlPt(n);
+  return { left: p.x + '%', top: p.y + '%' };
+}
+
+function snlLadderSvg_(x1, y1, x2, y2) {
+  const dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy) || 1;
+  const nx = -dy / len, ny = dx / len, amp = 2;
+  const rail = function (s) { return 'M' + (x1 + nx * amp * s) + ',' + (y1 + ny * amp * s) + ' L' + (x2 + nx * amp * s) + ',' + (y2 + ny * amp * s); };
+  let rungs = '';
+  const n = 5;
+  for (let i = 1; i < n; i++) {
+    const t = i / n, cx = x1 + dx * t, cy = y1 + dy * t;
+    rungs += '<line x1="' + (cx + nx * amp) + '" y1="' + (cy + ny * amp) + '" x2="' + (cx - nx * amp) + '" y2="' + (cy - ny * amp) + '" stroke="#3fb950" stroke-width="1.4" stroke-linecap="round"/>';
+  }
+  return '<path d="' + rail(1) + '" stroke="#3fb950" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
+    '<path d="' + rail(-1) + '" stroke="#3fb950" stroke-width="1.6" fill="none" stroke-linecap="round"/>' + rungs;
+}
+
+function snlSnakeSvg_(x1, y1, x2, y2) {
+  const dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy) || 1;
+  const nx = -dy / len, ny = dx / len, segs = 5;
+  let d = 'M' + x1 + ',' + y1;
+  for (let i = 1; i <= segs; i++) {
+    const t = i / segs, px = x1 + dx * t, py = y1 + dy * t, amp = 4.2 * (i % 2 === 0 ? 1 : -1);
+    d += ' Q' + (px + nx * amp) + ',' + (py + ny * amp) + ' ' + px + ',' + py;
+  }
+  return '<path d="' + d + '" stroke="#e5484d" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+    '<circle cx="' + x1 + '" cy="' + y1 + '" r="2.6" fill="#e5484d"/>' +
+    '<circle cx="' + (x1 - 1) + '" cy="' + (y1 - 1) + '" r="0.6" fill="#fff"/>' +
+    '<circle cx="' + (x1 + 1) + '" cy="' + (y1 - 1) + '" r="0.6" fill="#fff"/>';
+}
+
+function snlConnectionsSvg_(jumps) {
+  let out = '';
+  Object.keys(jumps).forEach(function (k) {
+    const from = Number(k), to = jumps[k], p1 = snlPt(from), p2 = snlPt(to);
+    out += to > from ? snlLadderSvg_(p1.x, p1.y, p2.x, p2.y) : snlSnakeSvg_(p1.x, p1.y, p2.x, p2.y);
+  });
+  return '<svg class="snlLines" viewBox="0 0 100 100" preserveAspectRatio="none">' + out + '</svg>';
 }
 
 function snlHtml(m) {
@@ -5483,6 +5635,7 @@ function snlHtml(m) {
       cells += '<div class="' + cls + '"><span>' + num + '</span>' + tag + '</div>';
     }
   }
+  const lines = snlConnectionsSvg_(s.jumps);
   const tokens = [0, 1].map(function (p) {
     const xy = snlXY(snlTokPos[p]);
     return '<div class="snlTok t' + p + '" id="snlTok' + p + '" style="left:' + xy.left + ';top:' + xy.top + ';background:' + cols[p] + '"></div>';
@@ -5498,7 +5651,7 @@ function snlHtml(m) {
     '<span style="color:' + cols[1] + '">\u25CF ' + escapeHtml(m.names[1]) + ' (' + s.pos[1] + ')</span></div>';
   const btn = (m.status === 'playing' && m.turn === m.me) ? '<button class="primaryBtn" onclick="mAct({type:\'roll\'})">\uD83C\uDFB2 Roll dice</button>' : '';
   setTimeout(function () { snlAnimateMove(m); }, 30);
-  return legend + '<div class="snlBoard"><div class="snlGrid">' + cells + '</div>' + tokens + '</div><div class="gameStatus" style="margin:8px 0">' + info + '</div>' + btn;
+  return legend + '<div class="snlBoard"><div class="snlGrid">' + cells + '</div>' + lines + tokens + '</div><div class="gameStatus" style="margin:8px 0">' + info + '</div>' + btn;
 }
 
 function snlAnimateMove(m) {
