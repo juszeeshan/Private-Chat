@@ -2107,7 +2107,12 @@ function snlConnectionsSvg_(jumps) {
 function snlHtml(m) {
   const s = m.state;
   const cols = ['#e5484d', '#3e8bff'];
-  if (snlMatchId !== m.id) { snlMatchId = m.id; snlTokPos = [0, 0]; snlAnimating = false; }
+  if (snlMatchId !== m.id) {
+    snlMatchId = m.id;
+    // Sync from the authoritative server state, not 0
+    snlTokPos = s.pos.slice();
+    snlAnimating = false;
+  }
   let cells = '';
   for (let row = 0; row < 10; row++) {
     for (let col = 0; col < 10; col++) {
