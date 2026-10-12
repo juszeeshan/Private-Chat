@@ -1711,13 +1711,20 @@ button {
   When this same file is hosted elsewhere (GitHub Pages, PWA),
   this polyfill recreates the same chainable API using fetch(),
   calling the Apps Script Web App's doPost(e) endpoint instead.
-  The Web App URL (ends in /exec) is collected once from the
-  person via a one-time setup screen and saved in localStorage,
-  instead of being hardcoded here.
+  The Web App URL (ends in /exec) is the SAME for every single
+  person who opens this app — it is not a personal credential —
+  so it is hardcoded here once. Nobody ever has to type it in,
+  on any device, in incognito mode, or after clearing their
+  browser's cache. The old "ask every visitor to paste the URL"
+  setup screen below is kept only as an emergency fallback for
+  the rare case this constant is ever left blank.
 ===================================================== */
 const IS_NATIVE_GAS_ = !!(window.google && window.google.script && window.google.script.run);
-let APPS_SCRIPT_URL = '';
-try { APPS_SCRIPT_URL = localStorage.getItem('appsScriptUrl') || ''; } catch (e) { APPS_SCRIPT_URL = ''; }
+const HARDCODED_APPS_SCRIPT_URL_ = 'https://script.google.com/macros/s/AKfycbzeDRDtbsYKGndPfnfKpyaN7Jr67wUcTaJ6s_tq58_cgqSOuQ_65FSZsZ81umQu37Fhow/exec';
+let APPS_SCRIPT_URL = HARDCODED_APPS_SCRIPT_URL_;
+if (!/^https:\/\/script\.google(usercontent)?\.com\//.test(APPS_SCRIPT_URL)) {
+  try { APPS_SCRIPT_URL = localStorage.getItem('appsScriptUrl') || ''; } catch (e) { APPS_SCRIPT_URL = ''; }
+}
 
 function isUrlConfigured_() {
   return /^https:\/\/script\.google(usercontent)?\.com\//.test(APPS_SCRIPT_URL);
