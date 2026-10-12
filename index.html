@@ -4607,11 +4607,31 @@ function renderTTT(game) {
      'onclick="newTTT()">' +
      'New Game' +
      '</button>';
+ } else {
+
+
+   html +=
+     '<button class="secondaryBtn" style="margin-top:10px" ' +
+     'onclick="resignTTTGame()">' +
+     '🏳️ Resign' +
+     '</button>';
  }
 
 
  box.innerHTML =
    html;
+}
+
+
+function resignTTTGame() {
+  if (!confirm('Resign this game? Your opponent will win.')) return;
+  google.script.run
+    .withSuccessHandler(function (res) {
+      if (res && res.ok) renderTTT(res.game);
+      else alert(res ? res.message : 'Could not resign.');
+    })
+    .withFailureHandler(function (err) { alert('Could not resign: ' + (err && err.message || err)); })
+    .resignTTT(sessionToken, currentChatCode);
 }
 
 
