@@ -4596,26 +4596,21 @@ function renderTTT(game) {
    '</div>';
 
 
- if (
-   game.status !==
-   'playing'
- ) {
+ html +=
+   '<button class="primaryBtn" style="margin-top:10px" ' +
+   'onclick="newTTT()" ' +
+   (game.status === 'playing' ? 'disabled' : '') +
+   '>' +
+   '🔁 Play Again' +
+   '</button>';
 
-
-   html +=
-     '<button class="primaryBtn" ' +
-     'onclick="newTTT()">' +
-     'New Game' +
-     '</button>';
- } else {
-
-
-   html +=
-     '<button class="secondaryBtn" style="margin-top:10px" ' +
-     'onclick="resignTTTGame()">' +
-     '🏳️ Resign' +
-     '</button>';
- }
+ html +=
+   '<button class="secondaryBtn" style="margin-top:10px" ' +
+   'onclick="resignTTTGame()" ' +
+   (game.status !== 'playing' ? 'disabled' : '') +
+   '>' +
+   '🏳️ Resign' +
+   '</button>';
 
 
  box.innerHTML =
