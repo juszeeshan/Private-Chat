@@ -405,13 +405,20 @@ button {
 
 
 #chatScreen {
+ position: fixed;
+ inset: 0;
  height: 100vh;
+ height: 100dvh;
  display: flex;
  flex-direction: column;
+ overflow: hidden;
 }
 
 
 .chatHeader {
+ position: sticky;
+ top: 0;
+ z-index: 20;
  height: 62px;
  flex-shrink: 0;
  display: flex;
@@ -460,7 +467,9 @@ button {
 
 .messages {
  flex: 1;
+ min-height: 0;
  overflow-y: auto;
+ overscroll-behavior: contain;
  padding: 18px;
 }
 
@@ -493,8 +502,66 @@ button {
 
 .messageSender {
  font-size: 11px;
+ font-weight: bold;
  color: var(--muted);
  margin-bottom: 5px;
+}
+
+.messageBubble.colored {
+ border-left: 4px solid var(--pc, var(--border));
+}
+
+.messageRow.mine .messageBubble.colored {
+ border-left: 1px solid var(--border);
+ border-right: 4px solid var(--pc, var(--border));
+}
+
+.messageRow.sending .messageBubble { opacity: .55; }
+
+.gameDock {
+ margin-top: 14px;
+ padding-top: 10px;
+ border-top: 1px solid var(--border);
+}
+.gameDockMsgs {
+ max-height: 92px;
+ overflow-y: auto;
+ font-size: 13px;
+ margin-bottom: 8px;
+}
+.gameDockMsgs div { padding: 2px 0; word-break: break-word; }
+.gameDockMsgs b { margin-right: 6px; }
+.gameEmojiRow {
+ display: flex;
+ gap: 6px;
+ flex-wrap: wrap;
+ margin-bottom: 8px;
+}
+.gameEmojiRow button {
+ border: 1px solid var(--border);
+ background: var(--panel2);
+ border-radius: 10px;
+ font-size: 20px;
+ padding: 4px 8px;
+ cursor: pointer;
+}
+.gameDockRow { display: flex; gap: 6px; }
+.gameDockRow input {
+ flex: 1;
+ min-width: 0;
+ padding: 9px 10px;
+ border-radius: 10px;
+ border: 1px solid var(--border);
+ background: var(--panel2);
+ color: var(--text);
+}
+.gameDockRow button {
+ border: 0;
+ border-radius: 10px;
+ background: var(--accent);
+ color: #fff;
+ font-weight: bold;
+ padding: 0 14px;
 }
 
 
@@ -1082,10 +1149,17 @@ button {
 .dotsEdge.h span { display: block; width: 100%; height: 5px; border-radius: 3px; background: var(--border); }
 .dotsEdge.v span { display: block; width: 5px; height: 100%; margin: 0 auto; border-radius: 3px; background: var(--border); }
 .dotsEdge.on.h span, .dotsEdge.on.v span { background: #3e8bff; }
+.dotsEdge.on.s0.h span, .dotsEdge.on.s0.v span { background: #e5484d; }
+.dotsEdge.on.s1.h span, .dotsEdge.on.s1.v span { background: #3e8bff; }
 .dotsEdge:disabled { cursor: default; }
 .dotsBox { display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; border-radius: 3px; }
-.dotsBox.p0 { background: rgba(63,139,255,.25); color: #3e8bff; }
-.dots Box.p1 { background: rgba(147, 51, 234, .25); color: #9333ea; }
+.dotsBox.p0 { background: rgba(226,85,85,.25); color: #e5484d; }
+.dotsBox.p1 { background: rgba(63,139,255,.25); color: #3e8bff; }
+.memC.on.s0 { background: rgba(226,85,85,.3); border-color: #e5484d; opacity: .9; }
+.memC.on.s1 { background: rgba(63,139,255,.3); border-color: #3e8bff; opacity: .9; }
+.tttCell.sx { color: #e5484d; }
+.tttCell.so { color: #3e8bff; }
+.playerLegend { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; font-size: 13px; font-weight: bold; margin: 2px 0 8px; }
 .wordMasked { font-size: 26px; letter-spacing: 4px; font-weight: 700; text-align: center; margin: 12px 0; font-family: monospace; }
 .wordKeys { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; width: min(360px, 100%); margin: 8px auto; }
 .wordKeys button { aspect-ratio: 1; border-radius: 6px; border: 1px solid var(--border); background: var(--panel2); color: var(--text); font-weight: 600; }
@@ -1694,6 +1768,16 @@ button {
    </div>
 
 
+   <div id="gameDock" class="gameDock hidden">
+     <div id="gameDockMsgs" class="gameDockMsgs"></div>
+     <div class="gameEmojiRow" id="gameEmojiRow"></div>
+     <div class="gameDockRow">
+       <input id="gameDockInput" type="text" maxlength="300" placeholder="Chat while you play..." onkeydown="if(event.key==='Enter'){gameDockSend();}">
+       <button onclick="gameDockSend()">Send</button>
+     </div>
+   </div>
+
+
  </div>
 
 
@@ -1854,6 +1938,9 @@ let pendingJoinPoll = null;
 
 
 let lastRenderedMessageSignature = '';
+let lastChatSig = '';
+let chatInflight = false;
+let pendingSends = [];
 
 
 let currentDrawerMode = '';
@@ -2836,6 +2923,8 @@ function openChat(code) {
 
  lastRenderedMessageSignature =
    '';
+ lastChatSig = '';
+ pendingSends = [];
 
 
  hideAllScreens();
@@ -2897,8 +2986,12 @@ function backHome() {
 
 function startPolling() {
   stopPolling();
-  pollTimer = setInterval(refreshChat, 1500);
-  gamePollTimer = setInterval(refreshGameState, 1000);
+  pollTimer = setInterval(function () { if (!document.hidden) refreshChat(); }, 2000);
+  gamePollTimer = setInterval(function () { if (!document.hidden) refreshGameState(); }, 1500);
+  if (!startPolling.vis) {
+    startPolling.vis = true;
+    document.addEventListener('visibilitychange', function () { if (!document.hidden && pollTimer) refreshChat(); });
+  }
 }
 
 
@@ -2936,13 +3029,23 @@ function stopPolling() {
 
 function refreshChat() {
   if (!sessionToken || !currentChatCode) return;
+  if (chatInflight) return;
+  chatInflight = true;
+  const askedCode = currentChatCode;
 
   google.script.run
     .withSuccessHandler(function (res) {
+      chatInflight = false;
+      if (askedCode !== currentChatCode) return;
       if (!res || !res.ok) {
         if (res && res.message === 'Access denied.') backHome();
         return;
       }
+
+      if (res.unchanged && currentChat && currentChat.messages) res.messages = currentChat.messages;
+      else lastChatSig = res.sig || '';
+      if (res.unchanged) lastChatSig = res.sig || lastChatSig;
+      if (!res.messages) res.messages = [];
 
       currentChat = res;
 
@@ -2953,9 +3056,10 @@ function refreshChat() {
       renderPeopleBadge(res);
       renderMessages(res.messages);
       maybeAutoOpenGames(res);
+      syncGameDock();
     })
-    .withFailureHandler(function () {})
-    .getChat(sessionToken, currentChatCode);
+    .withFailureHandler(function () { chatInflight = false; })
+    .getChat(sessionToken, currentChatCode, lastChatSig);
 }
 
 function renderOnlineStatus(res) {
@@ -3008,8 +3112,20 @@ function maybeAutoOpenGames(res) {
 
 
 
+const PLAYER_COLORS_ = ['#ff6b6b', '#4dabf7', '#51cf66', '#fcc419', '#da77f2', '#ff922b', '#22d3c5', '#f783ac'];
+
+function playerColor_(name) {
+  const list = (currentChat && currentChat.participants) || [];
+  let i = list.findIndex(function (p) { return p.name === name; });
+  if (i < 0) {
+    i = 0;
+    for (let k = 0; k < String(name).length; k++) i = (i * 31 + String(name).charCodeAt(k)) >>> 0;
+  }
+  return PLAYER_COLORS_[i % PLAYER_COLORS_.length];
+}
+
 function renderMessages(messages) {
-  const signature = messages.map(function (m) { return m.id + ':' + m.createdAt; }).join('|') + '|' + (currentChat && currentChat.isOwner ? 'o' : 'm');
+  const signature = messages.map(function (m) { return m.id + ':' + m.createdAt; }).join('|') + '|' + (currentChat && currentChat.isOwner ? 'o' : 'm') + '|p' + pendingSends.length + '|' + ((currentChat && currentChat.participants) || []).length;
   if (signature === lastRenderedMessageSignature) return;
   lastRenderedMessageSignature = signature;
 
@@ -3036,12 +3152,15 @@ function renderMessages(messages) {
     if (isMine) row.classList.add('mine');
 
     const bubble = document.createElement('div');
-    bubble.className = 'messageBubble';
+    bubble.className = 'messageBubble colored';
+    const pc = playerColor_(msg.senderName);
+    bubble.style.setProperty('--pc', pc);
 
     const head = document.createElement('div');
     head.className = 'messageHead';
     const sender = document.createElement('span');
     sender.className = 'messageSender';
+    sender.style.color = pc;
     sender.textContent = msg.senderName;
     const menuBtn = document.createElement('button');
     menuBtn.className = 'msgMenuBtn';
@@ -3074,7 +3193,24 @@ function renderMessages(messages) {
     box.appendChild(row);
   });
 
-  if (wasBottom) box.scrollTop = box.scrollHeight;
+  pendingSends.forEach(function (ps) {
+    const row = document.createElement('div');
+    row.className = 'messageRow mine sending';
+    const bubble = document.createElement('div');
+    bubble.className = 'messageBubble';
+    const text = document.createElement('div');
+    text.className = 'messageText';
+    text.textContent = ps.text;
+    const time = document.createElement('div');
+    time.className = 'messageTime';
+    time.textContent = 'Sending...';
+    bubble.appendChild(text);
+    bubble.appendChild(time);
+    row.appendChild(bubble);
+    box.appendChild(row);
+  });
+
+  if (wasBottom || pendingSends.length) box.scrollTop = box.scrollHeight;
 }
 
 function openMsgMenu(ev, msg, isMine) {
@@ -3148,6 +3284,7 @@ function deleteForMe(id) {
     .withSuccessHandler(function (res) {
       if (!res || !res.ok) { alert(res ? res.message : 'Delete failed.'); return; }
       lastRenderedMessageSignature = '';
+      lastChatSig = '';
       refreshChat();
     })
     .deleteMessageForMe(sessionToken, currentChatCode, id);
@@ -3165,39 +3302,101 @@ function deleteForMe(id) {
 ===================================================== */
 
 
+function sendText_(text, fromGame) {
+  text = String(text || '').trim();
+  if (!text) return;
+
+  const ps = { text: text };
+  pendingSends.push(ps);
+  if (currentChat) renderMessages(currentChat.messages || []);
+
+  google.script.run
+    .withSuccessHandler(function (res) {
+      pendingSends = pendingSends.filter(function (x) { return x !== ps; });
+      if (res && res.ok && res.message && currentChat && currentChat.messages) {
+        currentChat.messages = currentChat.messages.concat([res.message]);
+        lastChatSig = '';
+        renderMessages(currentChat.messages);
+        syncGameDock();
+      } else if (!res || !res.ok) {
+        showToast('Message failed to send');
+      }
+      refreshChat();
+    })
+    .withFailureHandler(function () {
+      pendingSends = pendingSends.filter(function (x) { return x !== ps; });
+      if (currentChat) renderMessages(currentChat.messages || []);
+      showToast('Message failed to send');
+    })
+    .sendMessage(sessionToken, currentChatCode, text);
+}
+
+
 function send() {
+  const input = document.getElementById('messageInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  sendText_(text);
+}
 
 
- const input =
-   document
-     .getElementById(
-       'messageInput'
-     );
+/* ---------- chat + emoji while playing a game ---------- */
 
+const GAME_EMOJIS_ = ['\uD83D\uDE00', '\uD83D\uDE02', '\uD83D\uDE2E', '\uD83D\uDE22', '\uD83D\uDE21', '\uD83D\uDC4D', '\uD83D\uDD25', '\uD83C\uDF89', 'GG'];
 
- const text =
-   input.value.trim();
+function gameDockSend() {
+  const inp = document.getElementById('gameDockInput');
+  if (!inp) return;
+  const t = inp.value.trim();
+  if (!t) return;
+  inp.value = '';
+  sendText_(t, true);
+}
 
+function gameEmojiSend(e) { sendText_(e, true); }
 
- if (!text) return;
+function syncGameDock() {
+  const dock = document.getElementById('gameDock');
+  if (!dock) return;
+  const open = !!openGameModal;
+  dock.classList.toggle('hidden', !open);
+  if (!open) return;
 
+  const row = document.getElementById('gameEmojiRow');
+  if (row && !row.childNodes.length) {
+    GAME_EMOJIS_.forEach(function (e) {
+      const b = document.createElement('button');
+      b.textContent = e;
+      b.onclick = function () { gameEmojiSend(e); };
+      row.appendChild(b);
+    });
+  }
 
- input.value = '';
-
-
- google.script.run
-   .withSuccessHandler(function() {
-
-
-     refreshChat();
-
-
-   })
-   .sendMessage(
-     sessionToken,
-     currentChatCode,
-     text
-   );
+  const box = document.getElementById('gameDockMsgs');
+  if (!box || !currentChat) return;
+  const msgs = (currentChat.messages || []).filter(function (m) { return m.type === 'text'; }).slice(-6);
+  const sig = msgs.map(function (m) { return m.id; }).join(',') + '|' + pendingSends.length;
+  if (box.dataset.sig === sig) return;
+  box.dataset.sig = sig;
+  const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 30;
+  box.innerHTML = '';
+  msgs.forEach(function (m) {
+    const d = document.createElement('div');
+    const b = document.createElement('b');
+    b.style.color = playerColor_(m.senderName);
+    b.textContent = m.senderName + ':';
+    d.appendChild(b);
+    d.appendChild(document.createTextNode(m.text));
+    box.appendChild(d);
+  });
+  pendingSends.forEach(function (ps) {
+    const d = document.createElement('div');
+    d.style.opacity = '.55';
+    d.textContent = 'You: ' + ps.text;
+    box.appendChild(d);
+  });
+  if (atBottom || true) box.scrollTop = box.scrollHeight;
 }
 
 
@@ -3262,6 +3461,7 @@ function deleteMessage(id) {
 
      lastRenderedMessageSignature =
        '';
+     lastChatSig = '';
 
 
      refreshChat();
@@ -4546,7 +4746,7 @@ function renderTTT(game) {
 
 
      html +=
-       '<button class="tttCell" ' +
+       '<button class="tttCell' + (cell === 'X' ? ' sx' : cell === 'O' ? ' so' : '') + '" ' +
        'onclick="tttMove(' +
        index +
        ')" ' +
@@ -5210,6 +5410,8 @@ function openModal(
    .classList.remove(
      'hidden'
    );
+
+ setTimeout(function () { try { syncGameDock(); } catch (e) {} }, 0);
 }
 
 
@@ -5219,6 +5421,7 @@ function closeModal() {
 
 
  openGameModal = '';
+ try { syncGameDock(); } catch (e) {}
   arcadeStop();
   chessSel = -1;
  stopCamera();
@@ -5448,6 +5651,7 @@ function pickGame(id) {
 function openMatchModal(title) {
   openModal(title, '<div id="matchContent">Loading...</div>');
   openGameModal = 'match';
+  syncGameDock();
 }
 
 function resumeMatch() {
@@ -5569,7 +5773,17 @@ function renderMatch(m, force) {
     '<button class="primaryBtn" style="flex:1" onclick="playAgainMatch(\'' + m.type + '\',' + (m.vsBot ? 'true' : 'false') + ')">\uD83D\uDD01 Play Again</button>' +
     '<button class="secondaryBtn" style="flex:1" onclick="closeModal();openGames()">\uD83C\uDFAE Play another game</button></div>';
 
-  box.innerHTML = statusLine(m) + body + foot;
+  box.innerHTML = statusLine(m) + matchLegend_(m) + body + foot;
+}
+
+const SEAT_COLORS_ = ['#e5484d', '#3e8bff'];
+
+function matchLegend_(m) {
+  if (!m.names || m.names.length < 2 || ['snakes', 'ludo', 'connect4', 'dots', 'memory', 'race', 'duel'].indexOf(m.type) === -1) return '';
+  const one = function (i) {
+    return '<span style="color:' + SEAT_COLORS_[i] + '">\u25CF ' + escapeHtml(m.names[i] || ('Player ' + (i + 1))) + (i === m.me ? ' (you)' : '') + '</span>';
+  };
+  return '<div class="playerLegend">' + one(0) + one(1) + '</div>';
 }
 
 function playAgainMatch(type, vsBot) {
@@ -5884,7 +6098,7 @@ function memHtml(m) {
   let grid = '';
   s.cards.forEach(function (c, i) {
     const shown = c !== null, matched = s.matched[i];
-    const cls = 'memC' + (matched ? ' on' : '') + (shown && !matched ? ' flip' : '');
+    const cls = 'memC' + (matched ? ' on s' + (s.by && s.by[i] >= 0 ? s.by[i] : 0) : '') + (shown && !matched ? ' flip' : '');
     const clickable = myTurn && !shown;
     grid += '<button class="' + cls + '"' + (clickable ? ' onclick="mAct({type:\'pick\',idx:' + i + '})"' : ' disabled') + '>' + (shown ? c : '❓') + '</button>';
   });
@@ -5897,7 +6111,7 @@ function memHtml(m) {
 
 function c4Html(m) {
   const s = m.state, myTurn = m.status === 'playing' && m.turn === m.me;
-  const cols = ['', '#3e8bff', '#e5484d'];
+  const cols = ['', SEAT_COLORS_[0], SEAT_COLORS_[1]];
   let cells = '';
   for (let r = 0; r < 6; r++) {
     for (let c = 0; c < 7; c++) {
@@ -5908,8 +6122,7 @@ function c4Html(m) {
   }
   let colBtns = '';
   for (let c = 0; c < 7; c++) colBtns += '<button class="c4Col"' + (myTurn ? ' onclick="mAct({type:\'drop\',col:' + c + '})"' : ' disabled') + '>▼</button>';
-  return '<div class="gameStatus"><span style="color:' + cols[1] + '">● ' + escapeHtml(m.names[0]) + '</span> vs <span style="color:' + cols[2] + '">● ' + escapeHtml(m.names[1]) + '</span></div>' +
-    '<div class="c4ColRow">' + colBtns + '</div><div class="c4Grid">' + cells + '</div>';
+  return '<div class="c4ColRow">' + colBtns + '</div><div class="c4Grid">' + cells + '</div>';
 }
 
 /* ---------------- Dots & Boxes ---------------- */
@@ -5924,13 +6137,13 @@ function dotsHtml(m) {
         cells += '<div class="dotsDot"></div>';
       } else if (gr % 2 === 0 && gc % 2 === 1) {
         const r = gr / 2, c = (gc - 1) / 2, idx = r * N + c, on = edge(idx);
-        cells += '<button class="dotsEdge h' + (on ? ' on' : '') + '"' + (myTurn && !on ? ' onclick="mAct({type:\'draw\',line:' + idx + '})"' : ' disabled') + '><span></span></button>';
+        cells += '<button class="dotsEdge h' + (on ? ' on s' + (s.by && s.by[idx] >= 0 ? s.by[idx] : 0) : '') + '"' + (myTurn && !on ? ' onclick="mAct({type:\'draw\',line:' + idx + '})"' : ' disabled') + '><span></span></button>';
       } else if (gr % 2 === 1 && gc % 2 === 0) {
         const r = (gr - 1) / 2, c = gc / 2, idx = 12 + r * (N + 1) + c, on = edge(idx);
-        cells += '<button class="dotsEdge v' + (on ? ' on' : '') + '"' + (myTurn && !on ? ' onclick="mAct({type:\'draw\',line:' + idx + '})"' : ' disabled') + '><span></span></button>';
+        cells += '<button class="dotsEdge v' + (on ? ' on s' + (s.by && s.by[idx] >= 0 ? s.by[idx] : 0) : '') + '"' + (myTurn && !on ? ' onclick="mAct({type:\'draw\',line:' + idx + '})"' : ' disabled') + '><span></span></button>';
       } else {
         const r = (gr - 1) / 2, c = (gc - 1) / 2, owner = s.owner[r * N + c];
-        cells += '<div class="dotsBox' + (owner === m.me ? ' p0' : owner === 1 - m.me ? ' p1' : '') + '">' + (owner !== -1 ? (owner === m.me ? '●' : '○') : '') + '</div>';
+        cells += '<div class="dotsBox' + (owner === 0 ? ' p0' : owner === 1 ? ' p1' : '') + '">' + (owner !== -1 ? '●' : '') + '</div>';
       }
     }
   }
@@ -5970,8 +6183,8 @@ function bar(v, max, color) {
 function duelHtml(m) {
   const s = m.state, me = m.me, op = 1 - me;
   const pips = function (n) { let x = ''; for (let i = 0; i < 5; i++) x += i < n ? '\u26A1' : '\u25AB\uFE0F'; return x; };
-  let h = '<div class="duelRow"><div><b>' + escapeHtml(m.names[me]) + ' (you)</b>' + bar(s.hp[me], 100, '#3fb950') + '<small>' + s.hp[me] + ' HP</small><div>' + pips(s.energy[me]) + '</div></div>' +
-    '<div>\uD83E\uDD4A</div><div><b>' + escapeHtml(m.names[op]) + '</b>' + bar(s.hp[op], 100, '#e25555') + '<small>' + s.hp[op] + ' HP</small><div>' + pips(s.energy[op]) + '</div></div></div>';
+  let h = '<div class="duelRow"><div><b>' + escapeHtml(m.names[me]) + ' (you)</b>' + bar(s.hp[me], 100, SEAT_COLORS_[me]) + '<small>' + s.hp[me] + ' HP</small><div>' + pips(s.energy[me]) + '</div></div>' +
+    '<div>\uD83E\uDD4A</div><div><b>' + escapeHtml(m.names[op]) + '</b>' + bar(s.hp[op], 100, SEAT_COLORS_[op]) + '<small>' + s.hp[op] + ' HP</small><div>' + pips(s.energy[op]) + '</div></div></div>';
   if (s.last) {
     const l = s.last;
     h += '<div class="roundBox">Round ' + l.round + ': you ' + DUEL_LABEL[l.moves[me]] + ' \u00B7 ' + escapeHtml(m.names[op]) + ' ' + DUEL_LABEL[l.moves[op]] +
@@ -6010,7 +6223,7 @@ function raceHtml(m) {
     return '<div class="lane"><div class="laneName">' + escapeHtml(m.names[i]) + (i === me ? ' (you)' : '') + ' \u00B7 ' + s.pos[i] + '/' + s.len + '</div>' +
       '<div class="track"><span class="car" style="left:calc(' + pct + '% * 0.88)">' + raceCarSvg_(color) + '</span><span class="flag">\uD83C\uDFC1</span></div></div>';
   };
-  let h = lane(me, '#3e8bff') + lane(op, '#e5484d');
+  let h = lane(me, SEAT_COLORS_[me]) + lane(op, SEAT_COLORS_[op]);
   if (s.last) {
     const l = s.last, fmt = function (i) {
       return (i === me ? 'You' : escapeHtml(m.names[i])) + ' ' + RACE_LABEL[l.moves[i]] + ' ' + (l.crash[i] ? '\uD83D\uDCA5 crashed (' + l.steps[i] + ')' : '+' + l.steps[i]);
