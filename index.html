@@ -1151,6 +1151,7 @@ button {
 .dotsEdge.on.h span, .dotsEdge.on.v span { background: #3e8bff; }
 .dotsEdge.on.s0.h span, .dotsEdge.on.s0.v span { background: #e5484d; }
 .dotsEdge.on.s1.h span, .dotsEdge.on.s1.v span { background: #3e8bff; }
+.dotsEdge.on.sn.h span, .dotsEdge.on.sn.v span { background: #9aa4b2; }
 .dotsEdge:disabled { cursor: default; }
 .dotsBox { display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; border-radius: 3px; }
 .dotsBox.p0 { background: rgba(226,85,85,.25); color: #e5484d; }
@@ -1159,6 +1160,42 @@ button {
 .memC.on.s1 { background: rgba(63,139,255,.3); border-color: #3e8bff; opacity: .9; }
 .tttCell.sx { color: #e5484d; }
 .tttCell.so { color: #3e8bff; }
+.revGrid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; width: min(360px, 100%); margin: 10px auto; background: #1f7a4a; padding: 4px; border-radius: 8px; }
+.revCell { aspect-ratio: 1; border: 0; background: #2a9d63; border-radius: 3px; padding: 0; position: relative; }
+.revCell.last { outline: 2px solid #ffd43b; outline-offset: -2px; }
+.revCell .disc { position: absolute; inset: 10%; border-radius: 50%; box-shadow: inset 0 -2px 3px rgba(0,0,0,.35); }
+.revCell .hint { position: absolute; inset: 38%; border-radius: 50%; background: rgba(255,255,255,.55); }
+.bsGrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; width: min(300px, 100%); margin: 6px auto 12px; }
+.bsC { aspect-ratio: 1; border: 1px solid var(--border); border-radius: 6px; background: #17456b; color: #fff; font-size: 16px; padding: 0; }
+.bsC.ship { background: #6b7a8f; }
+.bsC.hit { background: #e5484d; }
+.bsC.miss { background: #2b6c9b; opacity: .7; }
+.bsC.sunk { background: #7a1f24; }
+.bsC.reveal { background: #6b7a8f; opacity: .55; }
+.bsC:disabled { cursor: default; }
+.bsTitle { text-align: center; font-size: 13px; font-weight: bold; margin-top: 6px; }
+.pigBox { text-align: center; }
+.pigBig { font-size: 42px; margin: 6px 0; }
+.pigBtns { display: flex; gap: 8px; margin-top: 8px; }
+.pigBtns button { flex: 1; padding: 14px; border-radius: 12px; border: 0; font-weight: bold; color: #fff; background: var(--accent); }
+.pigBtns button.hold { background: #3fb950; }
+.pigBtns button:disabled { opacity: .45; }
+.nimRow { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 10px 0; min-height: 52px; }
+.nimStick { width: 14px; height: 48px; border-radius: 4px; border: 0; background: #d9a441; padding: 0; cursor: pointer; }
+.nimStick:disabled { cursor: default; opacity: .9; }
+.nimEmpty { color: var(--muted); font-size: 12px; }
+.matchLog { font-size: 12px; color: var(--muted); text-align: center; margin-top: 6px; line-height: 1.5; }
+.skCanvas { width: 100%; max-width: 600px; aspect-ratio: 3 / 2; background: #fff; border-radius: 10px; border: 1px solid var(--border); display: block; margin: 8px auto; touch-action: none; }
+.skTools { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; margin: 4px 0 8px; }
+.skCol { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); padding: 0; cursor: pointer; }
+.skCol.on { border-color: var(--text); box-shadow: 0 0 0 2px var(--accent); }
+.skW { min-width: 34px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel2); color: var(--text); cursor: pointer; }
+.skW.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.skHint { text-align: center; font-size: 26px; letter-spacing: 4px; font-weight: bold; min-height: 30px; }
+.skTimer { text-align: center; font-weight: bold; color: var(--muted); }
+.skGuessRow { display: flex; gap: 6px; margin: 4px 0 8px; }
+.skGuessRow input { flex: 1; min-width: 0; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel2); color: var(--text); }
+.skGuessRow button { border: 0; border-radius: 10px; background: var(--accent); color: #fff; font-weight: bold; padding: 0 16px; }
 .playerLegend { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; font-size: 13px; font-weight: bold; margin: 2px 0 8px; }
 .wordMasked { font-size: 26px; letter-spacing: 4px; font-weight: 700; text-align: center; margin: 12px 0; font-family: monospace; }
 .wordKeys { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; width: min(360px, 100%); margin: 8px auto; }
@@ -1202,7 +1239,14 @@ button {
 .bgGrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: min(360px, 100%); margin: 12px auto; }
 .bgC { aspect-ratio: 1; border: 1px solid var(--border); background: var(--panel2); color: var(--text); border-radius: 10px; font-size: 20px; font-weight: bold; }
 .bgC.on { background: #3fb950; color: #fff; border-color: #3fb950; }
+.bgC.on.s0 { background: #e5484d; border-color: #e5484d; }
+.bgC.on.s1 { background: #3e8bff; border-color: #3e8bff; }
+.bgC.on.sn { background: #9aa4b2; border-color: #9aa4b2; }
+.bgL.on.s0 { background: #e5484d; }
+.bgL.on.s1 { background: #3e8bff; }
 .bgC:disabled:not(.on) { opacity: .6; }
+.gameOnline { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.gameOnline .onlineDot { margin-right: 4px; vertical-align: middle; }
 
 .duelRow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; text-align: center; font-size: 13px; }
 .hpBar { height: 12px; background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 6px 0 2px; }
@@ -1769,6 +1813,7 @@ button {
 
 
    <div id="gameDock" class="gameDock hidden">
+     <div id="gameOnline" class="gameOnline"></div>
      <div id="gameDockMsgs" class="gameDockMsgs"></div>
      <div class="gameEmojiRow" id="gameEmojiRow"></div>
      <div class="gameDockRow">
@@ -3371,6 +3416,13 @@ function syncGameDock() {
       b.onclick = function () { gameEmojiSend(e); };
       row.appendChild(b);
     });
+  }
+
+  const on = document.getElementById('gameOnline');
+  if (on && currentChat) {
+    on.innerHTML = (currentChat.participants || []).filter(function (p) { return p.name !== currentChat.me; }).map(function (p) {
+      return '<span><span class="onlineDot' + (p.online ? ' online' : '') + '"></span>' + escapeHtml(p.name) + (p.online ? ' \u00B7 online' : ' \u00B7 offline') + '</span>';
+    }).join('');
   }
 
   const box = document.getElementById('gameDockMsgs');
@@ -5581,12 +5633,17 @@ const HUB_GAMES = [
     ['chess', '\u265F\uFE0E', 'Chess', 'Full rules, check and checkmate'],
     ['bingo', '\uD83D\uDD22', 'Bingo', 'Call numbers, first to 5 lines'],
     ['connect4', '\uD83D\uDD35', 'Connect Four', 'Drop pieces, connect 4 in a row'],
+    ['reversi', '\u26AB', 'Reversi', 'Flank the other color to flip discs'],
+    ['battleship', '\uD83D\uDEA2', 'Battleship', 'Hunt the hidden fleet, hit to fire again'],
+    ['pig', '\uD83C\uDFB2', 'Pig Dice', 'Push your luck, first to 50'],
     ['dots', '\u25A2', 'Dots & Boxes', 'Draw a line, complete a box, score a point'],
     ['ttt', '\u2B55', 'Tic-Tac-Toe', 'Classic 3 in a row']
   ]],
   ['Puzzle', [
     ['memory', '\uD83C\uDCCF', 'Memory Match', 'Flip pairs, most matches wins'],
-    ['word', '\uD83D\uDD24', 'Word Duel', 'Race to guess the letters of a secret word']
+    ['word', '\uD83D\uDD24', 'Word Duel', 'Race to guess the letters of a secret word'],
+    ['nim', '\uD83E\uDE75', 'Nim Sticks', 'Take sticks from one row, last stick wins'],
+    ['scribble', '\uD83C\uDFA8', 'Scribble', 'Draw a secret word, your friend guesses it']
   ]],
   ['Battle', [
     ['duel', '\uD83E\uDD4A', 'Battle Arena', 'Fighting duel: attack, block, charge, special'],
@@ -5707,6 +5764,8 @@ function handleMatchPoll(res) {
     renderMatch(mm, true);
   } else if (openGameModal === 'match' && curMatch && mm.id === curMatch.id && mm.v > curMatch.v) {
     renderMatch(mm, false);
+  } else if (openGameModal === 'match' && curMatch && mm.type === 'scribble' && mm.id === curMatch.id && mm.v === curMatch.v && mm.status === 'playing') {
+    skLive(mm);
   }
 }
 
@@ -5752,6 +5811,8 @@ function renderMatch(m, force) {
   const t = document.getElementById('modalTitle');
   if (t) t.textContent = m.title + (m.vsBot ? ' \u00B7 vs Bot' : '');
 
+  if (m.type === 'scribble') { skRender(m); return; }
+
   let body = '';
   switch (m.type) {
     case 'snakes': body = snlHtml(m); break;
@@ -5764,22 +5825,29 @@ function renderMatch(m, force) {
     case 'connect4': body = c4Html(m); break;
     case 'dots': body = dotsHtml(m); break;
     case 'word': body = wordHtml(m); break;
+    case 'reversi': body = revHtml(m); break;
+    case 'battleship': body = bsHtml(m); break;
+    case 'pig': body = pigHtml(m); break;
+    case 'nim': body = nimHtml(m); break;
     default: body = arcadeHtml(m);
   }
 
-  let foot = '';
-  if (m.status === 'playing') foot = '<button class="secondaryBtn" style="margin-top:14px" onclick="resignMatch()">\uD83C\uDFF3\uFE0F Resign</button>';
-  else foot = '<div style="display:flex;gap:8px;margin-top:14px">' +
-    '<button class="primaryBtn" style="flex:1" onclick="playAgainMatch(\'' + m.type + '\',' + (m.vsBot ? 'true' : 'false') + ')">\uD83D\uDD01 Play Again</button>' +
-    '<button class="secondaryBtn" style="flex:1" onclick="closeModal();openGames()">\uD83C\uDFAE Play another game</button></div>';
+  const foot = matchFoot_(m);
 
   box.innerHTML = statusLine(m) + matchLegend_(m) + body + foot;
+}
+
+function matchFoot_(m) {
+  if (m.status === 'playing') return '<button class="secondaryBtn" style="margin-top:14px" onclick="resignMatch()">\uD83C\uDFF3\uFE0F Resign</button>';
+  return '<div style="display:flex;gap:8px;margin-top:14px">' +
+    '<button class="primaryBtn" style="flex:1" onclick="playAgainMatch(\'' + m.type + '\',' + (m.vsBot ? 'true' : 'false') + ')">\uD83D\uDD01 Play Again</button>' +
+    '<button class="secondaryBtn" style="flex:1" onclick="closeModal();openGames()">\uD83C\uDFAE Play another game</button></div>';
 }
 
 const SEAT_COLORS_ = ['#e5484d', '#3e8bff'];
 
 function matchLegend_(m) {
-  if (!m.names || m.names.length < 2 || ['snakes', 'ludo', 'connect4', 'dots', 'memory', 'race', 'duel'].indexOf(m.type) === -1) return '';
+  if (!m.names || m.names.length < 2 || ['snakes', 'ludo', 'connect4', 'dots', 'memory', 'race', 'duel', 'bingo', 'reversi', 'pig', 'scribble'].indexOf(m.type) === -1) return '';
   const one = function (i) {
     return '<span style="color:' + SEAT_COLORS_[i] + '">\u25CF ' + escapeHtml(m.names[i] || ('Player ' + (i + 1))) + (i === m.me ? ' (you)' : '') + '</span>';
   };
@@ -6081,10 +6149,11 @@ function bingoHtml(m) {
   const s = m.state, myTurn = m.status === 'playing' && m.turn === m.me;
   let grid = '';
   s.card.forEach(function (n) {
-    const called = s.called.indexOf(n) !== -1;
-    grid += '<button class="bgC' + (called ? ' on' : '') + '"' + (myTurn && !called ? ' onclick="mAct({type:\'call\',n:' + n + '})"' : ' disabled') + '>' + n + '</button>';
+    const ci = s.called.indexOf(n), called = ci !== -1;
+    const who = called ? (s.by && s.by[ci] !== undefined && s.by[ci] !== null ? s.by[ci] : 'n') : '';
+    grid += '<button class="bgC' + (called ? ' on s' + who : '') + '"' + (myTurn && !called ? ' onclick="mAct({type:\'call\',n:' + n + '})"' : ' disabled') + '>' + n + '</button>';
   });
-  const letters = 'BINGO'.split('').map(function (l, i) { return '<b class="bgL' + (i < s.lines[0] ? ' on' : '') + '">' + l + '</b>'; }).join('');
+  const letters = 'BINGO'.split('').map(function (l, i) { return '<b class="bgL' + (i < s.lines[0] ? ' on s' + m.me : '') + '">' + l + '</b>'; }).join('');
   const last = s.last ? '<div class="gameStatus" style="margin-top:8px">' + (s.last.idx === m.me ? 'You' : escapeHtml(m.names[s.last.idx])) + ' called <b>' + s.last.n + '</b></div>' : '';
   return '<div class="bgLetters">' + letters + '</div><div class="gameStatus">Your lines: ' + s.lines[0] + '/5 \u00B7 ' + escapeHtml(m.names[1 - m.me] || 'Opponent') + ': ' + s.lines[1] + '/5</div>' +
     '<div class="bgGrid">' + grid + '</div>' + last +
@@ -6098,7 +6167,7 @@ function memHtml(m) {
   let grid = '';
   s.cards.forEach(function (c, i) {
     const shown = c !== null, matched = s.matched[i];
-    const cls = 'memC' + (matched ? ' on s' + (s.by && s.by[i] >= 0 ? s.by[i] : 0) : '') + (shown && !matched ? ' flip' : '');
+    const cls = 'memC' + (matched ? ' on s' + (s.by && s.by[i] >= 0 ? s.by[i] : 'n') : '') + (shown && !matched ? ' flip' : '');
     const clickable = myTurn && !shown;
     grid += '<button class="' + cls + '"' + (clickable ? ' onclick="mAct({type:\'pick\',idx:' + i + '})"' : ' disabled') + '>' + (shown ? c : '❓') + '</button>';
   });
@@ -6125,6 +6194,278 @@ function c4Html(m) {
   return '<div class="c4ColRow">' + colBtns + '</div><div class="c4Grid">' + cells + '</div>';
 }
 
+/* ---------------- Scribble (draw & guess) ---------------- */
+
+const SK_COLORS_ = ['#111111', '#e5484d', '#3e8bff', '#3fb950', '#f5a623', '#9b59b6', '#8b5a2b', '#ffffff'];
+const SK_WIDTHS_ = [0, 3, 6, 12];
+const skS = { id: null, round: -1, drawer: null, fin: false, pending: [], sending: false, color: 0, width: 2, down: false, cur: null, drawnN: -1, remaining: 0, at: 0, timeoutSent: false };
+
+function skStyle_(ctx, c, w) {
+  ctx.strokeStyle = SK_COLORS_[c] || '#111';
+  ctx.fillStyle = SK_COLORS_[c] || '#111';
+  ctx.lineWidth = SK_WIDTHS_[w] || 6;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+}
+
+function skDrawStroke_(ctx, st) {
+  const W = ctx.canvas.width, H = ctx.canvas.height, p = st.p;
+  skStyle_(ctx, st.c, st.w);
+  if (p.length === 2) {
+    ctx.beginPath();
+    ctx.arc(p[0] / 1000 * W, p[1] / 1000 * H, ctx.lineWidth / 2, 0, Math.PI * 2);
+    ctx.fill();
+    return;
+  }
+  ctx.beginPath();
+  ctx.moveTo(p[0] / 1000 * W, p[1] / 1000 * H);
+  for (let i = 2; i < p.length; i += 2) ctx.lineTo(p[i] / 1000 * W, p[i + 1] / 1000 * H);
+  ctx.stroke();
+}
+
+function skDrawAll_(strokes) {
+  const cv = document.getElementById('skCanvas');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  (strokes || []).forEach(function (st) { skDrawStroke_(ctx, st); });
+  skS.drawnN = (strokes || []).length;
+}
+
+function skRender(m) {
+  const box = document.getElementById('matchContent');
+  if (!box) return;
+  const s = m.state, isDrawer = s.drawer === m.me, playing = m.status === 'playing';
+  const need = !document.getElementById('skCanvas') || skS.id !== m.id || skS.round !== s.round || skS.drawer !== s.drawer || skS.fin !== !playing;
+  if (need) {
+    skS.id = m.id; skS.round = s.round; skS.drawer = s.drawer; skS.fin = !playing;
+    skS.pending = []; skS.sending = false; skS.timeoutSent = false; skS.down = false; skS.cur = null;
+    let h = '<div id="skStatus" class="mStatus"></div><div id="skScores" class="gameStatus"></div><div id="skHint" class="skHint"></div><div id="skTimer" class="skTimer"></div>' +
+      '<canvas id="skCanvas" class="skCanvas" width="600" height="400"></canvas>';
+    if (playing && isDrawer) {
+      h += '<div class="skTools">';
+      SK_COLORS_.forEach(function (c, i) { h += '<button class="skCol' + (i === skS.color ? ' on' : '') + '" style="background:' + c + '" onclick="skPick(' + i + ',0)"></button>'; });
+      [1, 2, 3].forEach(function (w) { h += '<button class="skW' + (w === skS.width ? ' on' : '') + '" onclick="skPick(-1,' + w + ')">' + (w === 1 ? '\u2022' : w === 2 ? '\u25CF' : '\u2B24') + '</button>'; });
+      h += '<button class="skW" onclick="skClear()">\uD83E\uDDF9</button><button class="skW" onclick="mAct({type:\'skip\'})">\u23ED</button></div>';
+    } else if (playing) {
+      h += '<div class="skGuessRow"><input id="skGuessInput" maxlength="30" placeholder="Type your guess..." autocomplete="off" onkeydown="if(event.key===\'Enter\')skGuess()"><button onclick="skGuess()">Guess</button></div>';
+    }
+    h += '<div id="skLog" class="matchLog"></div><div id="skFoot"></div>';
+    box.innerHTML = h;
+    skDrawAll_(s.strokes);
+    if (playing && isDrawer) skBind_();
+  }
+  skLive(m);
+}
+
+function skLive(m) {
+  const s = m.state, isDrawer = s.drawer === m.me, playing = m.status === 'playing';
+  const set = function (id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+  const colName = function (i) { return '<span style="color:' + SEAT_COLORS_[i] + '">' + (i === m.me ? 'You' : escapeHtml(m.names[i] || 'Player')) + '</span>'; };
+  if (playing) {
+    set('skStatus', isDrawer ? '\uD83C\uDFA8 Draw: <b>' + escapeHtml(s.word || '') + '</b>' : '\uD83D\uDD0D Guess what ' + escapeHtml(m.names[s.drawer] || 'your friend') + ' is drawing');
+    set('skHint', isDrawer ? '' : escapeHtml(s.hint || ''));
+  } else {
+    set('skStatus', statusLine(m).replace(/^<div class="mStatus[^"]*">|<\/div>$/g, ''));
+    set('skHint', '');
+  }
+  set('skScores', 'Round ' + Math.min(s.round + (playing ? 1 : 0), s.total) + '/' + s.total + ' \u00B7 ' + colName(0) + ' ' + s.scores[0] + ' \u00B7 ' + colName(1) + ' ' + s.scores[1]);
+  skS.remaining = s.remaining; skS.at = Date.now();
+  if (s.remaining > 0) skS.timeoutSent = false;
+
+  let log = '';
+  if (s.last) {
+    const l = s.last;
+    if (l.how === 'solved') log += '\u2705 ' + (l.guesser === m.me ? 'You' : escapeHtml(m.names[l.guesser])) + ' guessed \u201C' + escapeHtml(l.word) + '\u201D (+' + l.gPts + ', drawer +' + l.dPts + ')<br>';
+    else log += (l.how === 'skipped' ? '\u23ED Skipped' : '\u23F0 Time\u2019s up') + ' \u2014 the word was \u201C' + escapeHtml(l.word) + '\u201D<br>';
+  }
+  (s.guesses || []).slice(-5).forEach(function (g) {
+    log += '<b style="color:' + SEAT_COLORS_[g.idx] + '">' + (g.idx === m.me ? 'You' : escapeHtml(m.names[g.idx])) + '</b>: ' + escapeHtml(g.text) + (g.ok ? ' \u2705' : ' \u274C') + '<br>';
+  });
+  set('skLog', log);
+  set('skFoot', matchFoot_(m));
+
+  if (!isDrawer && s.strokes.length !== skS.drawnN) skDrawAll_(s.strokes);
+  skTick_();
+}
+
+function skTick_() {
+  const el = document.getElementById('skTimer');
+  if (!el || !curMatch || curMatch.type !== 'scribble' || curMatch.status !== 'playing') { if (el) el.textContent = ''; return; }
+  const rem = Math.max(0, Math.ceil(skS.remaining - (Date.now() - skS.at) / 1000));
+  el.textContent = '\u23F1 ' + rem + 's';
+  if (rem <= 0 && !skS.timeoutSent && !matchBusy) { skS.timeoutSent = true; mAct({ type: 'timeout' }); }
+}
+setInterval(skTick_, 1000);
+
+function skPick(color, width) {
+  if (color >= 0) skS.color = color;
+  if (width > 0) skS.width = width;
+  document.querySelectorAll('.skCol').forEach(function (b, i) { b.classList.toggle('on', i === skS.color); });
+  document.querySelectorAll('.skW').forEach(function (b) {
+    const t = b.textContent;
+    const w = t === '\u2022' ? 1 : t === '\u25CF' ? 2 : t === '\u2B24' ? 3 : 0;
+    if (w) b.classList.toggle('on', w === skS.width);
+  });
+}
+
+function skClear() {
+  skS.pending = [];
+  const cv = document.getElementById('skCanvas');
+  if (cv) { const ctx = cv.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height); }
+  mAct({ type: 'clear' });
+}
+
+function skGuess() {
+  const inp = document.getElementById('skGuessInput');
+  if (!inp || matchBusy) return;
+  const t = inp.value.trim();
+  if (!t) return;
+  inp.value = '';
+  mAct({ type: 'guess', text: t });
+}
+
+function skBind_() {
+  const cv = document.getElementById('skCanvas');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const pos = function (e) {
+    const r = cv.getBoundingClientRect();
+    return [Math.max(0, Math.min(1000, Math.round((e.clientX - r.left) / r.width * 1000))), Math.max(0, Math.min(1000, Math.round((e.clientY - r.top) / r.height * 1000)))];
+  };
+  const finish = function () {
+    if (!skS.cur) return;
+    skS.pending.push(skS.cur);
+    skS.cur = null; skS.down = false;
+    skFlush_();
+  };
+  cv.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    try { cv.setPointerCapture(e.pointerId); } catch (x) {}
+    const p = pos(e);
+    skS.down = true;
+    skS.cur = { c: skS.color, w: skS.width, p: [p[0], p[1]] };
+    skDrawStroke_(ctx, skS.cur);
+  });
+  cv.addEventListener('pointermove', function (e) {
+    if (!skS.down || !skS.cur) return;
+    e.preventDefault();
+    const p = pos(e), a = skS.cur.p, lx = a[a.length - 2], ly = a[a.length - 1];
+    if (Math.abs(p[0] - lx) + Math.abs(p[1] - ly) < 6) return;
+    skStyle_(ctx, skS.cur.c, skS.cur.w);
+    ctx.beginPath();
+    ctx.moveTo(lx / 1000 * cv.width, ly / 1000 * cv.height);
+    ctx.lineTo(p[0] / 1000 * cv.width, p[1] / 1000 * cv.height);
+    ctx.stroke();
+    a.push(p[0], p[1]);
+    if (a.length >= 200) {
+      const keep = { c: skS.cur.c, w: skS.cur.w, p: [p[0], p[1]] };
+      finish();
+      skS.down = true; skS.cur = keep;
+    }
+  });
+  cv.addEventListener('pointerup', finish);
+  cv.addEventListener('pointercancel', finish);
+  cv.addEventListener('pointerleave', function () { if (skS.down) finish(); });
+}
+
+function skFlush_() {
+  if (skS.sending || !skS.pending.length || !curMatch) return;
+  const batch = skS.pending.splice(0, 8);
+  skS.sending = true;
+  const roundAtSend = skS.round;
+  google.script.run
+    .withSuccessHandler(function (res) {
+      skS.sending = false;
+      if (!res || !res.ok) { showToast(res ? res.message : 'Could not send drawing'); }
+      else if (res.match.state.round !== roundAtSend || res.match.status !== 'playing') { renderMatch(res.match, true); return; }
+      else { curMatch = res.match; skLive(res.match); }
+      if (skS.pending.length) skFlush_();
+    })
+    .withFailureHandler(function () { skS.sending = false; showToast('Network error'); })
+    .matchAction(sessionToken, currentChatCode, { type: 'draw', strokes: batch });
+}
+
+/* ---------------- Reversi ---------------- */
+
+function revHtml(m) {
+  const s = m.state, myTurn = m.status === 'playing' && m.turn === m.me;
+  let cells = '';
+  for (let i = 0; i < 64; i++) {
+    const v = s.board[i], hint = myTurn && s.valid.indexOf(i) !== -1;
+    cells += '<button class="revCell' + (s.last === i ? ' last' : '') + '"' + (hint ? ' onclick="mAct({type:\'place\',pos:' + i + '})"' : ' disabled') + '>' +
+      (v ? '<span class="disc" style="background:' + SEAT_COLORS_[v - 1] + '"></span>' : (hint ? '<span class="hint"></span>' : '')) + '</button>';
+  }
+  const pass = s.pass >= 0 ? '<div class="gameStatus" style="margin-top:6px">' + (s.pass === m.me ? 'You have' : escapeHtml(m.names[s.pass]) + ' has') + ' no move and passes.</div>' : '';
+  return '<div class="gameStatus"><span style="color:' + SEAT_COLORS_[0] + '">\u25CF ' + s.counts[0] + '</span> \u00B7 <span style="color:' + SEAT_COLORS_[1] + '">\u25CF ' + s.counts[1] + '</span></div>' +
+    '<div class="revGrid">' + cells + '</div>' + pass +
+    '<div class="gameStatus" style="font-size:12px;margin-top:6px">Tap a dotted square to place a disc. Discs you flank are flipped. Most discs wins.</div>';
+}
+
+/* ---------------- Battleship ---------------- */
+
+function bsName_(c) { return String.fromCharCode(65 + (c % 6)) + (Math.floor(c / 6) + 1); }
+
+function bsHtml(m) {
+  const s = m.state, myTurn = m.status === 'playing' && m.turn === m.me;
+  let enemy = '', mine = '';
+  s.enemy.forEach(function (v, i) {
+    const cls = v === 1 ? ' miss' : v === 2 ? ' hit' : v === 3 ? ' sunk' : v === 4 ? ' reveal' : '';
+    const txt = v === 1 ? '\u2022' : v === 2 ? '\u2716' : v === 3 ? '\uD83D\uDD25' : '';
+    enemy += '<button class="bsC' + cls + '"' + (myTurn && v === 0 ? ' onclick="mAct({type:\'fire\',cell:' + i + '})"' : ' disabled') + '>' + txt + '</button>';
+  });
+  s.mine.forEach(function (v) {
+    const cls = v === 1 ? ' ship' : v === 2 ? ' hit' : v === 3 ? ' miss' : '';
+    mine += '<div class="bsC' + cls + '" style="display:flex;align-items:center;justify-content:center">' + (v === 2 ? '\u2716' : v === 3 ? '\u2022' : '') + '</div>';
+  });
+  const lines = s.log.slice(-4).map(function (e) {
+    const who = e.idx === m.me ? 'You' : escapeHtml(m.names[e.idx]);
+    return who + ' fired ' + bsName_(e.cell) + ': ' + (e.sunk ? '\uD83D\uDCA5 ship sunk!' : e.hit ? '\uD83C\uDFAF hit!' : 'miss');
+  }).join('<br>');
+  return '<div class="gameStatus">Enemy ships left: ' + s.left[1] + ' \u00B7 Yours: ' + s.left[0] + '</div>' +
+    '<div class="bsTitle">\uD83C\uDFAF Enemy waters' + (myTurn ? ' \u2014 tap to fire' : '') + '</div><div class="bsGrid">' + enemy + '</div>' +
+    '<div class="bsTitle">\uD83D\uDEA2 Your fleet</div><div class="bsGrid">' + mine + '</div>' +
+    '<div class="matchLog">' + lines + '</div>' +
+    '<div class="gameStatus" style="font-size:12px;margin-top:6px">A hit lets you fire again. Sink all 4 enemy ships to win.</div>';
+}
+
+/* ---------------- Pig Dice ---------------- */
+
+function pigHtml(m) {
+  const s = m.state, myTurn = m.status === 'playing' && m.turn === m.me;
+  const lines = s.log.slice(-5).map(function (e) {
+    const who = e.idx === m.me ? 'You' : escapeHtml(m.names[e.idx]);
+    if (e.act === 'bust') return who + ' rolled \uD83D\uDCA5 1 \u2014 lost ' + e.lost + ' points';
+    if (e.act === 'hold') return who + ' banked ' + e.banked + ' (total ' + e.score + ')';
+    return who + ' rolled ' + e.roll;
+  }).join('<br>');
+  const turnName = m.turn >= 0 ? (m.turn === m.me ? 'Your' : escapeHtml(m.names[m.turn]) + '\'s') : '';
+  return '<div class="pigBox"><div class="gameStatus"><span style="color:' + SEAT_COLORS_[m.me] + '">You: ' + s.scores[m.me] + '</span> \u00B7 <span style="color:' + SEAT_COLORS_[1 - m.me] + '">' + escapeHtml(m.names[1 - m.me]) + ': ' + s.scores[1 - m.me] + '</span> \u00B7 Goal ' + s.target + '</div>' +
+    (m.status === 'playing' ? '<div class="pigBig">' + s.total + '</div><div class="gameStatus" style="font-size:12px">' + turnName + ' points this turn (lost if you roll a 1)</div>' : '') +
+    '<div class="pigBtns"><button' + (myTurn ? ' onclick="mAct({type:\'roll\'})"' : ' disabled') + '>\uD83C\uDFB2 Roll</button><button class="hold"' + (myTurn && s.total > 0 ? ' onclick="mAct({type:\'hold\'})"' : ' disabled') + '>\uD83D\uDCB0 Hold</button></div>' +
+    '<div class="matchLog">' + lines + '</div></div>';
+}
+
+/* ---------------- Nim Sticks ---------------- */
+
+function nimHtml(m) {
+  const s = m.state, myTurn = m.status === 'playing' && m.turn === m.me;
+  let rows = '';
+  s.piles.forEach(function (n, p) {
+    let sticks = '';
+    for (let k = 0; k < n; k++) {
+      sticks += '<button class="nimStick"' + (myTurn ? ' onclick="mAct({type:\'take\',pile:' + p + ',n:' + (n - k) + '})"' : ' disabled') + '></button>';
+    }
+    rows += '<div class="nimRow">' + (n ? sticks : '<span class="nimEmpty">empty</span>') + '</div>';
+  });
+  const lines = s.log.slice(-4).map(function (e) {
+    return (e.idx === m.me ? 'You' : escapeHtml(m.names[e.idx])) + ' took ' + e.n + ' from row ' + (e.pile + 1);
+  }).join('<br>');
+  return rows + '<div class="matchLog">' + lines + '</div>' +
+    '<div class="gameStatus" style="font-size:12px;margin-top:6px">Tap a stick to take it and every stick to its right in that row. Whoever takes the last stick wins.</div>';
+}
+
 /* ---------------- Dots & Boxes ---------------- */
 
 function dotsHtml(m) {
@@ -6137,10 +6478,10 @@ function dotsHtml(m) {
         cells += '<div class="dotsDot"></div>';
       } else if (gr % 2 === 0 && gc % 2 === 1) {
         const r = gr / 2, c = (gc - 1) / 2, idx = r * N + c, on = edge(idx);
-        cells += '<button class="dotsEdge h' + (on ? ' on s' + (s.by && s.by[idx] >= 0 ? s.by[idx] : 0) : '') + '"' + (myTurn && !on ? ' onclick="mAct({type:\'draw\',line:' + idx + '})"' : ' disabled') + '><span></span></button>';
+        cells += '<button class="dotsEdge h' + (on ? ' on s' + (s.by && s.by[idx] >= 0 ? s.by[idx] : 'n') : '') + '"' + (myTurn && !on ? ' onclick="mAct({type:\'draw\',line:' + idx + '})"' : ' disabled') + '><span></span></button>';
       } else if (gr % 2 === 1 && gc % 2 === 0) {
         const r = (gr - 1) / 2, c = gc / 2, idx = 12 + r * (N + 1) + c, on = edge(idx);
-        cells += '<button class="dotsEdge v' + (on ? ' on s' + (s.by && s.by[idx] >= 0 ? s.by[idx] : 0) : '') + '"' + (myTurn && !on ? ' onclick="mAct({type:\'draw\',line:' + idx + '})"' : ' disabled') + '><span></span></button>';
+        cells += '<button class="dotsEdge v' + (on ? ' on s' + (s.by && s.by[idx] >= 0 ? s.by[idx] : 'n') : '') + '"' + (myTurn && !on ? ' onclick="mAct({type:\'draw\',line:' + idx + '})"' : ' disabled') + '><span></span></button>';
       } else {
         const r = (gr - 1) / 2, c = (gc - 1) / 2, owner = s.owner[r * N + c];
         cells += '<div class="dotsBox' + (owner === 0 ? ' p0' : owner === 1 ? ' p1' : '') + '">' + (owner !== -1 ? '●' : '') + '</div>';
